@@ -73,7 +73,4 @@ The algorithm was developed in C++, using the Qt Creator IDE.
 </p>
 
 ---
-```
-
-👉 Quer que eu também adicione **subtítulos (###)** para as partes *plots* e *avatar replication*, para ficar ainda mais organizado e navegável?
 
