@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PlotsInterface</class>
+ <widget class="QDialog" name="PlotsInterface">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1334</width>
+    <height>861</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1351</width>
+     <height>871</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <widget class="QWidget" name="RightArm_tab">
+    <attribute name="title">
+     <string>Right Arm</string>
+    </attribute>
+    <widget class="QCustomPlot" name="R_ForeArm_x" native="true">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>290</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_Wrist_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>560</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_Wrist_x" native="true">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>560</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_ForeArm_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>290</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_ForeArm_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>290</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_UpperArm_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>20</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_Wrist_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>560</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_UpperArm_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>20</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="R_UpperArm_x" native="true">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>20</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_x_label">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>0</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Upper Arm X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_y_label">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>0</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Upper Arm  Y</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_z_label">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>0</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Upper Arm  Z</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_LowerArm_x_label">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>270</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Lower Arm X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_LowerArm_z_label">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>270</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Lower Arm  Z</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_LowerArm_y_label">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>270</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Lower Arm  Y</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_Wrist_x_label">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>540</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Wrist X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_Wrist_z_label">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>540</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Wrist Z</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_Wrist_y_label">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>540</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right Wrist Y</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="LeftArm_tab">
+    <attribute name="title">
+     <string>Left Arm</string>
+    </attribute>
+    <widget class="QCustomPlot" name="L_Wrist_x" native="true">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>560</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_Wrist_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>560</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_ForeArm_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>290</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_ForeArm_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>290</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_UpperArm_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>20</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_ForeArm_x" native="true">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>290</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_Wrist_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>560</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_UpperArm_x" native="true">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>20</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="L_UpperArm_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>20</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_z_label_4">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>0</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Upper Arm  Z</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_Wrist_x_label_4">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>540</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Wrist X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_y_label_4">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>0</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Upper Arm  Y</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_LowerArm_z_label_4">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>270</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Lower Arm  Z</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_Wrist_y_label_4">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>540</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Wrist Y</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_x_label_4">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>0</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Upper Arm X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_LowerArm_x_label_4">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>270</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Lower Arm X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_LowerArm_y_label_4">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>270</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Lower Arm  Y</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_Wrist_z_label_4">
+     <property name="geometry">
+      <rect>
+       <x>890</x>
+       <y>540</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left Wrist Z</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="Trunk_tab">
+    <attribute name="title">
+     <string>Trunk</string>
+    </attribute>
+    <widget class="QCustomPlot" name="Trunk_x" native="true">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>90</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="Trunk_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>860</x>
+       <y>90</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="Trunk_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>90</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_z_label_5">
+     <property name="geometry">
+      <rect>
+       <x>860</x>
+       <y>70</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Trunk Z</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_y_label_5">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>70</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Trunk Y</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="R_UpperArm_x_label_5">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>70</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Trunk X</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
