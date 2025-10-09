@@ -13,11 +13,11 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
   ui->setupUi(this);
 
   sR_arm.setName("Right_arm");
-  sR_forearm.setName("Right_foreArm");
+  sR_forearm.setName("Right_forearm");
   sR_wrist.setName("Right_wrist");
   s_trunk.setName("Trunk");
   sL_arm.setName("Left_arm");
-  sL_forearm.setName("Left_foreArm");
+  sL_forearm.setName("Left_forearm");
   sL_wrist.setName("Left_wrist");
   this->segments_buffer = {&sR_arm, &sR_forearm, &sR_wrist, &sL_arm, &sL_forearm, &sL_wrist, &s_trunk};
 
