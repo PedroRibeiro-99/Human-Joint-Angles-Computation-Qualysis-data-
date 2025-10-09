@@ -12,13 +12,13 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
 {
   ui->setupUi(this);
 
-  sR_arm.setName("Right Arm");
-  sR_forearm.setName("Right ForeArm");
-  sR_wrist.setName("Right Wrist");
+  sR_arm.setName("Right_arm");
+  sR_forearm.setName("Right_foreArm");
+  sR_wrist.setName("Right_wrist");
   s_trunk.setName("Trunk");
-  sL_arm.setName("Left Arm");
-  sL_forearm.setName("Left ForeArm");
-  sL_wrist.setName("Left Wrist");
+  sL_arm.setName("Left_arm");
+  sL_forearm.setName("Left_foreArm");
+  sL_wrist.setName("Left_wrist");
   this->segments_buffer = {&sR_arm, &sR_forearm, &sR_wrist, &sL_arm, &sL_forearm, &sL_wrist, &s_trunk};
 
 
@@ -136,10 +136,16 @@ void MainWindow::on_pushButton_plots_clicked(){
 }
 
 void MainWindow::on_pushButton_execMovement_clicked(){
+  //Get segments names
+  QStringList segmentsNames;
+  for(Segment *segment : this->segments_buffer){
+    segmentsNames.push_back(QString::fromStdString(segment->getName()));
+  }
+  vector<QStringList> topicsStr = {this->q_obj.getMarkersNames(),segmentsNames};
 
   ros::init(argc, argv, "QualysisROSComunication");
   ros::NodeHandle n;
-  ros_communication ros_handler(argc,argv,n);
+  ros_communication ros_handler(argc,argv,n,topicsStr);
 
   sleep(1);
   vector<Marker> markers_data;
@@ -187,9 +193,16 @@ void MainWindow::on_pushButton_execMovement_clicked(){
 
 void MainWindow::on_pushButton_execFrame_clicked()
 {
+  //Get segments names
+  QStringList segmentsNames;
+  for(Segment *segment : this->segments_buffer){
+    segmentsNames.push_back(QString::fromStdString(segment->getName()));
+  }
+  vector<QStringList> topicsStr = {this->q_obj.getMarkersNames(),segmentsNames};
+
   ros::init(argc, argv, "QualysisROSComunication");
   ros::NodeHandle n;
-  ros_communication ros_handler(argc,argv,n);
+  ros_communication ros_handler(argc,argv,n,topicsStr);
 
   sleep(1);
   vector<Marker> markers_data;

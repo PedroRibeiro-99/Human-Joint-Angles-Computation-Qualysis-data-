@@ -33,6 +33,7 @@ public:
   void resetData();
   int get_n_frames();
   int get_n_markers();
+  QStringList getMarkersNames();
   int load_data_file(QString fileName);
   void get_frame_data(vector<Marker> &markers_frame_date, int frame);
   void getMarkerData(Marker &marker, int markerID, int frame);

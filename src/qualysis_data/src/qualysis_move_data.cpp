@@ -20,6 +20,11 @@ int QualysisMoveData::get_n_markers(){
   return this->n_markers;
 }
 
+QStringList QualysisMoveData::getMarkersNames(){
+  return this->markersNames;
+}
+
+
 int QualysisMoveData::load_data_file(QString fileName){
   QFile file(fileName);
 
