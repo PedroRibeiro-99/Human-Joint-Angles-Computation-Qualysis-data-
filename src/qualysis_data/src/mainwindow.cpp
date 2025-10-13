@@ -1,8 +1,18 @@
 #include "../include/qualysis_data/mainwindow.h"
-#include "../include/qualysis_data/ros_communication.h"
+#include "../include/qualysis_data/config.hpp"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QFile>
+#include <QThread>
+
+#if SIMULATION == 0
+#include <vrep_common/simRosLoadScene.h>
+#include <vrep_common/simRosCloseScene.h>
+#include <vrep_common/simRosStartSimulation.h>
+#include <vrep_common/simRosStopSimulation.h>
+#include <vrep_common/simRosPauseSimulation.h>
+#include <QProcess>
+#endif
 
 #define QUALYSIS_DATA_FILES_PATH "/home/pedro/qualysis_ws/src/qualysis_data/files/tsv_files"
 
@@ -29,6 +39,11 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
   this->jL_forearm.initJoint("LEFT FOREARM",&sL_arm, &sL_forearm);
   this->jL_wrist.initJoint("LEFT WRIST",&sL_forearm, &sL_wrist);
   this->joints_buffer = {&jR_arm, &jR_forearm, &jR_wrist, &jL_arm, &jL_forearm, &jL_wrist};
+
+#if SIMULATION == 0
+  ros::init(argc, argv, "QualysisROSComunication");
+  if(this->initSimulationEnvironment() == -1) exit(-1);
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -135,7 +150,51 @@ void MainWindow::on_pushButton_plots_clicked(){
     this->plot_interface.show();
 }
 
+
+int MainWindow::initSimulationEnvironment(){
+
+  if(!ros::master::check())
+      ros::start();
+
+  bool online = false;
+
+  ros::V_string nodes;
+  ros::master::getNodes(nodes);
+  for(string node_name : nodes){
+    if(node_name == "/vrep")
+        online = true;
+  }
+
+  ros::ServiceClient rosClient;
+  ros::NodeHandle n;
+
+  if(!online)
+    return -1;
+  else{
+    // pause simulations
+    rosClient = n.serviceClient<vrep_common::simRosStopSimulation>("/vrep/simRosStopSimulation");
+    vrep_common::simRosStopSimulation srvstop;
+    rosClient.call(srvstop);
+
+    // close the old scene
+    rosClient = n.serviceClient<vrep_common::simRosCloseScene>("/vrep/simRosCloseScene");
+    vrep_common::simRosCloseScene srvc;
+    rosClient.call(srvc);
+  }
+  // load the new scene
+  rosClient = n.serviceClient<vrep_common::simRosLoadScene>("/vrep/simRosLoadScene");
+  vrep_common::simRosLoadScene srv;
+  srv.request.fileName = COPPELIA_SCENARIO_PATH;
+  rosClient.call(srv);
+
+  rosClient = n.serviceClient<vrep_common::simRosStartSimulation>("/vrep/simRosStartSimulation");
+  vrep_common::simRosStartSimulation srvstart;
+  rosClient.call(srvstart);
+}
+
+
 void MainWindow::on_pushButton_execMovement_clicked(){
+
   //Get segments names
   QStringList segmentsNames;
   for(Segment *segment : this->segments_buffer){
@@ -143,11 +202,9 @@ void MainWindow::on_pushButton_execMovement_clicked(){
   }
   vector<QStringList> topicsStr = {this->q_obj.getMarkersNames(),segmentsNames};
 
-  ros::init(argc, argv, "QualysisROSComunication");
   ros::NodeHandle n;
   ros_communication ros_handler(argc,argv,n,topicsStr);
 
-  sleep(1);
   vector<Marker> markers_data;
   vector<vector<float>> markersPositions;
   vector<vector<float>> segmentsPositions;
@@ -193,6 +250,7 @@ void MainWindow::on_pushButton_execMovement_clicked(){
 
 void MainWindow::on_pushButton_execFrame_clicked()
 {
+
   //Get segments names
   QStringList segmentsNames;
   for(Segment *segment : this->segments_buffer){
@@ -200,11 +258,9 @@ void MainWindow::on_pushButton_execFrame_clicked()
   }
   vector<QStringList> topicsStr = {this->q_obj.getMarkersNames(),segmentsNames};
 
-  ros::init(argc, argv, "QualysisROSComunication");
   ros::NodeHandle n;
   ros_communication ros_handler(argc,argv,n,topicsStr);
 
-  sleep(1);
   vector<Marker> markers_data;
   vector<vector<float>> markersPositions;
   vector<vector<float>> segmentsPositions;
@@ -248,6 +304,7 @@ void MainWindow::on_pushButton_execFrame_clicked()
   for(Marker marker_data : markers_data)
     markersPositions.push_back({marker_data.coordinates.x, marker_data.coordinates.y, marker_data.coordinates.z});
 
+  sleep(1);
   ros_handler.rosPublishMarkersPositions(markersPositions);
   ros_handler.rosPublishSegmentsPositions(segmentsPositions);
   ros_handler.rosPublishSegmentsOrientations(segmentsOrientations);

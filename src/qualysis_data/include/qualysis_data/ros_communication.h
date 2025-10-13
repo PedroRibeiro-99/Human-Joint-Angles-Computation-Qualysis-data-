@@ -57,6 +57,7 @@ public:
   void rosPublishMarkersPositions(vector<vector<float>> positions);
   void rosPublishSegmentsPositions(vector<vector<float>> positions);
   void rosPublishSegmentsOrientations(vector<vector<float>> orientations);
+  void rosPublish(vector<vector<float>> markersPositions, vector<vector<float>> segmentsPositions, vector<vector<float>> segmentsOrientations);
 };
 
 #endif // ROS_COMMUNICATION_H

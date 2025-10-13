@@ -1,9 +1,18 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(qualysis_data)
+set(PROJECT_NAME qualysis_data)
+project(${PROJECT_NAME})
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
+set (SIMULATION 0)
+set (COPPELIA_PATH /home/$ENV{USER}/CoppeliaSim_Edu_V4_2_0_Ubuntu18_04)
+set (COPPELIA_SCENARIO_PATH ${PROJECT_SOURCE_DIR}/Operator_qualisys.ttt)
+# configuration files
+configure_file (
+  "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/config.hpp.in"
+  "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/config.hpp"
+)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -32,7 +41,9 @@ find_package(Qt4 REQUIRED)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package()
+catkin_package(
+	CATKIN_DEPENDS vrep_common 
+)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${QT_INCLUDE_DIRS})
 include_directories(${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})

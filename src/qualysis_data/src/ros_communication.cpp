@@ -65,3 +65,9 @@ void ros_communication::rosPublishSegmentsOrientations(vector<vector<float>> ori
   }
   r.sleep();
 }
+
+void ros_communication::rosPublish(vector<vector<float>> markersPositions, vector<vector<float>> segmentsPositions, vector<vector<float>> segmentsOrientations){
+  this->rosPublishMarkersPositions(markersPositions);
+  this->rosPublishSegmentsPositions(segmentsPositions);
+  this->rosPublishSegmentsOrientations(segmentsOrientations);
+}

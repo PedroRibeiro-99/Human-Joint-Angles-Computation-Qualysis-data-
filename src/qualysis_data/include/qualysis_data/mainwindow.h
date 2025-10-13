@@ -5,6 +5,7 @@
 #include "segment.h"
 #include "joint.h"
 #include "plots_interface.h"
+#include "ros_communication.h"
 #include <iostream>
 
 using namespace std;
@@ -24,8 +25,8 @@ public:
 private Q_SLOTS:
   void on_pushButton_loadfile_clicked();
   void on_pushButton_plots_clicked();
+  int initSimulationEnvironment();
   void on_pushButton_execMovement_clicked();
-
   void on_pushButton_execFrame_clicked();
 
 private:
