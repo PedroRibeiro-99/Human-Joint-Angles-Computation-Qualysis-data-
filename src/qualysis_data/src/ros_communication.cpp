@@ -60,7 +60,7 @@ void ros_communication::rosPublishSegmentsOrientations(vector<vector<float>> ori
 
   for(int segment = 0; segment < n_segments; segment++){
     ori = orientations.at(segment);
-    ori_msg.data = {ori.at(0),ori.at(1),ori.at(2)}; //pass the x,y,z coordinates to pos_msg
+    ori_msg.data = {ori.at(0),ori.at(1),ori.at(2)}; //pass the x,y,z coordinates to ori_msg
     segmentsOrientationsPubBuffer.at(segment).publish(ori_msg);
   }
   r.sleep();

@@ -19,50 +19,15 @@ void getRPY(Vector3d &eulerAngles, Matrix3d Rot){
 }
 
 
-// Decompõe R em ângulos na ordem Y-X-Z
-/*void getRPY(Vector3d &eulerAngles, Matrix3d R) {
-    // Ordem YXZ: pitch (y), roll (x), yaw (z)
-
-    if (std::abs(R(1,2)) >= 1.0 - 1e-8) {
-        // Singularidade (gimbal lock)
-        eulerAngles.x() = (R(1,2) < 0) ? M_PI/2.0 : -M_PI/2.0; // roll
-        eulerAngles.y() = std::atan2(-R(0,1), R(0,0));        // pitch
-        eulerAngles.z() = 0.0;                                // yaw indefinido
-    } else {
-        eulerAngles.x() = std::asin(-R(1,2));                   // roll (X)
-        eulerAngles.y() = std::atan2(R(0,2), R(2,2));           // pitch (Y)
-        eulerAngles.z() = std::atan2(R(1,0), R(1,1));           // yaw (Z)
-    }
-}*/
-
-//yzx
-void getRPY_YZX(Vector3d &eulerAngles, Matrix3d R) {
-    const double EPS = 1e-8;
-    double sin_yaw = R(1,0);
-
-    if (std::abs(sin_yaw) >= 1.0 - EPS){
-        eulerAngles.z() = (sin_yaw > 0.0) ? M_PI_2 : -M_PI_2;
-        eulerAngles.x() = 0.0; // roll
-        eulerAngles.y() = std::atan2(R(0,2), R(2,2));
-    }
-    else {
-        eulerAngles.z() = std::asin(sin_yaw);
-        eulerAngles.x() = std::atan2(-R(1,2), R(1,1));
-        eulerAngles.y() = std::atan2(-R(2,0), R(0,0));
-    }
-}
-
-
-
 void getRPY_XYZ(Vector3d &eulerAngles, Matrix3d R) {
     const double EPS = 1e-8;
     double sy = R(0,2); // sin(pitch)
 
     if (std::abs(sy) >= 1.0 - EPS) {
-        // Singularidade (gimbal lock): pitch = ±90°
+
         eulerAngles.y() = (sy > 0 ? M_PI/2.0 : -M_PI/2.0); // pitch
-        eulerAngles.x() = std::atan2(R(2,1), R(1,1));      // roll + yaw acoplados
-        eulerAngles.z() = 0.0;                             // yaw indefinido
+        eulerAngles.x() = std::atan2(R(2,1), R(1,1));      // roll + yaw
+        eulerAngles.z() = 0.0;                             // yaw
     } else {
         eulerAngles.y() = std::asin(sy);                      // pitch
         eulerAngles.x() = std::atan2(-R(1,2), R(2,2));        // roll

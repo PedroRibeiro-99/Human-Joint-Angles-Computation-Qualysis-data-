@@ -139,7 +139,6 @@ void MainWindow::on_pushButton_loadfile_clicked(){
     }
     file.close();
   }
-  //ui->loadFile_label->setText(QString::fromStdString(file_path));
   ui->loadFile_label->setText(file_name);
 }
 
