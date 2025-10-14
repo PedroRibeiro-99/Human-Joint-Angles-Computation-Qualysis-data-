@@ -8,6 +8,7 @@ add_compile_options(-std=c++11)
 set (SIMULATION 0)
 set (COPPELIA_PATH /home/$ENV{USER}/CoppeliaSim_Edu_V4_2_0_Ubuntu18_04)
 set (COPPELIA_SCENARIO_PATH ${PROJECT_SOURCE_DIR}/Operator_qualisys.ttt)
+set (FILES_PATH ${PROJECT_SOURCE_DIR}/files/tsv_files)
 # configuration files
 configure_file (
   "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/config.hpp.in"

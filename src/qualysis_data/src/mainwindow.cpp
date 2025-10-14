@@ -14,7 +14,6 @@
 #include <QProcess>
 #endif
 
-#define QUALYSIS_DATA_FILES_PATH "/home/pedro/qualysis_ws/src/qualysis_data/files/tsv_files"
 
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
   QMainWindow(parent),
@@ -84,7 +83,7 @@ void MainWindow::on_pushButton_loadfile_clicked(){
   this->plot_interface.reset_plots();
   this->q_obj.resetData();
 
-  QString file_name = QFileDialog::getOpenFileName(this,"",QUALYSIS_DATA_FILES_PATH);
+  QString file_name = QFileDialog::getOpenFileName(this,"",FILES_PATH);
   char *file_path = file_name.toLocal8Bit().data();
 
   if(this->q_obj.load_data_file(file_path) == 1){
