@@ -8,13 +8,14 @@ class Joint{
 private:
   Vector3d eulerAngles;
   vector<string> markersNames;
-  Segment *segment1, *segment2;
+  //Segment *segment1, *segment2;
+  vector<Segment*> segments;
   string name;
   bool validData;
 
 public:
   Joint();
-  void initJoint(string name, Segment *segment1, Segment *segment2);
+  void initJoint(string name, vector<Segment*> segments);
   void resetData();
   bool verifyData();
   bool getDataStatus();

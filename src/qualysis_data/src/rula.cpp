@@ -107,7 +107,7 @@ void Rula::computeUpperArmEvaluation(){
    else if(upperArm.flexion > 45 && upperArm.flexion <= 90) upperArm.evaluation = 3;
    else if(upperArm.flexion > 90) upperArm.evaluation = 4;
 
-   upperArm.evaluation += (upperArm.raised + upperArm.abducted - upperArm.arm_weight_supported);
+   upperArm.evaluation += (upperArm.raised + upperArm.abducted);
    upperArm.evaluation_status = upperArmEvaluationStatus[upperArm.evaluation - 1];
 }
 
@@ -156,21 +156,19 @@ void Rula::computeTrunkEvaluation(){
   trunk.evaluation = 1;
 
   switch(trunk.standing){
-
-  case TRUE:
-  if(trunk.flexion >= -5 && trunk.flexion <= 0.1) trunk.evaluation = 1;
-  else if(trunk.flexion > 0.1 && trunk.flexion <= 20) trunk.evaluation = 2;
-  else if(trunk.flexion > 20 && trunk.flexion <= 60) trunk.evaluation = 3;
-  else if(trunk.flexion > 60) trunk.evaluation = 4;
-    break;
-
-  case FALSE:
-    if(trunk.well_suported == TRUE) trunk.evaluation = 1;
+  case true:
+    if(trunk.flexion >= -5 && trunk.flexion <= 0.1) trunk.evaluation = 1;
+    else if(trunk.flexion > 0.1 && trunk.flexion <= 20) trunk.evaluation = 2;
+    else if(trunk.flexion > 20 && trunk.flexion <= 60) trunk.evaluation = 3;
+    else if(trunk.flexion > 60) trunk.evaluation = 4;
+  break;
+  case false:
+    if(trunk.well_suported) trunk.evaluation = 1;
     else trunk.evaluation = 2;
-    break;
+  break;
   }
 
-  trunk.evaluation += trunk.bending + trunk.twisted;
+  trunk.evaluation += trunk.bent + trunk.twisted;
   trunk.evaluation_status = trunkEvaluationStatus[trunk.evaluation - 1];
 }
 

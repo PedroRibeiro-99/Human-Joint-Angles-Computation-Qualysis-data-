@@ -3,8 +3,6 @@
 
 #include "rulainterface.h"
 
-#define TRUE 1
-#define FALSE -1
 #define GOOD 1
 #define MODERATED 2
 #define BAD 3

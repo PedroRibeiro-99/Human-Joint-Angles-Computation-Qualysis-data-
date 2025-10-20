@@ -2,11 +2,11 @@
 
 Joint::Joint(){}
 
-void Joint::initJoint(string name, Segment *segment1, Segment *segment2){
+void Joint::initJoint(string name, vector<Segment*> segments){
   this->name = name;
-  this->segment1 = segment1;
-  this->segment2 = segment2;
+  this->segments = segments;
 }
+
 
 void Joint::resetData(){
   this->eulerAngles.x() = 0;
@@ -15,11 +15,13 @@ void Joint::resetData(){
 }
 
 bool Joint::verifyData(){
-  if(this->segment1->getDataStatus() && this->segment2->getDataStatus())
-    this->validData = true;
-  else
-    this->validData = false;
-
+  this->validData = true;
+  for(Segment *segment: segments){
+    if(!(segment->getDataStatus())){
+      this->validData = false;
+      break;
+    }
+  }
   return this->validData;
 }
 
@@ -32,22 +34,36 @@ string Joint::getName(){
 }
 
 void Joint::computeEulerAngles(){
-  Matrix3d segment1Matrix, segment2Matrix;
 
-  CoordinateRefFrame segment1RefFrame,segment2RefFrame;
-  this->segment1->getCalibratedRefFrame(segment1RefFrame);
-  this->segment2->getCalibratedRefFrame(segment2RefFrame);
+  Matrix3d Matrix1, Matrix2;
+  CoordinateRefFrame RefFrame1, RefFrame2;
 
-  segment1Matrix.col(0) = segment1RefFrame.xVector.normalized();
-  segment1Matrix.col(1) = segment1RefFrame.yVector.normalized();
-  segment1Matrix.col(2) = segment1RefFrame.zVector.normalized();
+  if(segments.size() == 1){
+    Matrix1 = Matrix3d::Identity(); //World Reference Frame Matrix
+    Segment *segment = this->segments.at(0);
+    segment->getCalibratedRefFrame(RefFrame2);
+    Matrix2.col(0) = RefFrame2.xVector.normalized();
+    Matrix2.col(1) = RefFrame2.yVector.normalized();
+    Matrix2.col(2) = RefFrame2.zVector.normalized();
+  }
+  else{
+    Segment *segment1 = this->segments.at(0);
+    Segment *segment2 = this->segments.at(1);
 
-  segment2Matrix.col(0) = segment2RefFrame.xVector.normalized();
-  segment2Matrix.col(1) = segment2RefFrame.yVector.normalized();
-  segment2Matrix.col(2) = segment2RefFrame.zVector.normalized();
+    segment1->getCalibratedRefFrame(RefFrame1);
+    segment2->getCalibratedRefFrame(RefFrame2);
+
+    Matrix1.col(0) = RefFrame1.xVector.normalized();
+    Matrix1.col(1) = RefFrame1.yVector.normalized();
+    Matrix1.col(2) = RefFrame1.zVector.normalized();
+
+    Matrix2.col(0) = RefFrame2.xVector.normalized();
+    Matrix2.col(1) = RefFrame2.yVector.normalized();
+    Matrix2.col(2) = RefFrame2.zVector.normalized();
+  }
 
   Matrix3d rotMatrix;
-  rotMatrix = segment1Matrix.transpose() * segment2Matrix;
+  rotMatrix = Matrix1.transpose() * Matrix2;
 
   getRPY_XYZ(this->eulerAngles,rotMatrix);
   this->eulerAngles *= 180/3.1415;
