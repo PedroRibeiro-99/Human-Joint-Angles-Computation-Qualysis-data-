@@ -20,15 +20,14 @@ private:
   NeckVariables neck;
   TrunkVariables trunk;
   LegsVariables legs;
+  int loadScore;
   int groupA_Score;
   int groupB_Score;
-  int loadScore;
   int totalScore;
 
 public:
   Rula();
-  Rula(UpperArmVariables &upperArm, LowerArmVariables &lowerArm, WristVariables &wrist, NeckVariables &neck, TrunkVariables &trunk, LegsVariables &legs, int loadScore);
-  void setRULA_Variables(UpperArmVariables &upperArm, LowerArmVariables &lowerArm, WristVariables &wrist, NeckVariables &neck, TrunkVariables &trunk, LegsVariables &legs, int loadScore);
+  void setRULA_Variables(RULA_SegmentsVariables &rulaVariables);
   void computeUpperArmEvaluation();
   void computeLowerArmEvaluation();
   void computeWristEvaluation();

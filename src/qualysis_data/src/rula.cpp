@@ -73,29 +73,15 @@ Rula::Rula()
 {
 }
 
-Rula::Rula(UpperArmVariables &upperArm, LowerArmVariables &lowerArm, WristVariables &wrist,
-           NeckVariables &neck, TrunkVariables &trunk, LegsVariables &legs, int loadScore){
-
-  this->upperArm = upperArm;
-  this->lowerArm = lowerArm;
-  this->wrist = wrist;
-  this->neck = neck;
-  this->trunk = trunk;
-  this->legs = legs;
-  this->loadScore = loadScore;
+void Rula::setRULA_Variables(RULA_SegmentsVariables &rulaVariables){
+  this->upperArm = rulaVariables.upperArm;
+  this->lowerArm = rulaVariables.lowerArm;
+  this->wrist = rulaVariables.wrist;
+  this->neck = rulaVariables.neck;
+  this->trunk = rulaVariables.trunk;
+  this->legs = rulaVariables.legs;
+  this->loadScore = rulaVariables.loadScore;
 }
-
-void Rula::setRULA_Variables(UpperArmVariables &upperArm, LowerArmVariables &lowerArm, WristVariables &wrist,
-                             NeckVariables &neck, TrunkVariables &trunk, LegsVariables &legs, int loadScore){
-  this->upperArm = upperArm;
-  this->lowerArm = lowerArm;
-  this->wrist = wrist;
-  this->neck = neck;
-  this->trunk = trunk;
-  this->legs = legs;
-  this->loadScore = loadScore;
-}
-
 
 
 void Rula::computeUpperArmEvaluation(){

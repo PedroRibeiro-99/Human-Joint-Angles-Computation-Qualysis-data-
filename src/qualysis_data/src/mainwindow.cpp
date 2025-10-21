@@ -1,11 +1,13 @@
 #include "../include/qualysis_data/mainwindow.h"
 #include "../include/qualysis_data/config.hpp"
+#include "../include/qualysis_data/rula.h"
+
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QFile>
 #include <QThread>
 
-#if SIMULATION == 0
+#if SIMULATION == 1
 #include <vrep_common/simRosLoadScene.h>
 #include <vrep_common/simRosCloseScene.h>
 #include <vrep_common/simRosStartSimulation.h>
@@ -42,7 +44,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
   this->j_trunk.initJoint("TRUNK",{&s_trunk});
   this->joints_buffer = {&jR_arm, &jR_forearm, &jR_wrist, &jL_arm, &jL_forearm, &jL_wrist, &j_neck, &j_trunk};
 
-#if SIMULATION == 0
+#if SIMULATION == 1
   ros::init(argc, argv, "QualysisROSComunication");
   if(this->initSimulationEnvironment() == -1) exit(-1);
 #endif
@@ -80,6 +82,23 @@ int appendJointsData(QFile &file, vector<Joint*> joints, int frame){
   in << "-----------------------------------------------------" << endl;
 }
 
+#if RULA_ASSESSMENT == 1
+int appendRULA_Data(QFile &file, Rula &rRULA, Rula &lRULA, int frame){
+  QTextStream in(&file);
+
+  in << "FRAME: " << frame << endl << endl;
+  in << "RIGHT ARM RULA ASSESSMENT" << endl;
+  in << "Right Upper Arm: " << rRULA.getUpperArmScore() << "\t\t\t | \t\t\t" << "Left Upper Arm: " << lRULA.getUpperArmScore() << endl;
+  in << "Right Lower Arm: " << rRULA.getLowerArmScore() << "\t\t\t | \t\t\t" << "Left Lower Arm: " << lRULA.getLowerArmScore() << endl;
+  in << "Right Wrist: " << rRULA.getWristScore() << "\t\t\t\t | \t\t\t" << "Left Wrist: " << lRULA.getWristScore() << endl;
+  in << "Group A Score: " << rRULA.getGroupA_Score() << "\t\t\t | \t\t\t" << "Group A Score: " << lRULA.getGroupA_Score() << endl << endl;
+  in << "Neck Score: " << rRULA.getNeckScore() << endl;
+  in << "Trunk Score: " << rRULA.getTrunkScore() << endl;
+  in << "Group B Score: " << rRULA.getGroupB_Score() << endl << endl;
+  in << "RIGHT TOTAL SCORE: " << rRULA.getTotalScore() << "\t\t | \t\t\t" << "LEFT TOTAL SCORE: " << lRULA.getTotalScore() << endl;
+  in << "-----------------------------------------------------" << endl;
+}
+#endif
 
 
 void MainWindow::on_pushButton_loadfile_clicked(){
@@ -100,19 +119,35 @@ void MainWindow::on_pushButton_loadfile_clicked(){
     this->s_neck.initSegment(this->q_obj.getMarkersIDs(vector<string>{"LBH","RBH","C7"}),1,-1,{0,0,-90});
     this->s_trunk.initSegment(this->q_obj.getMarkersIDs(vector<string>{"RPSI_back","LPSI_back","C7"}),1,1,{0,0,-90});
 
-    QString write_file = file_name;
-    write_file.replace("tsv_files", "reports");
-    write_file.replace(".tsv",".txt");
+    QString jointsReportFileStr = file_name;
+    jointsReportFileStr.replace("tsv_files", "reports");
+    jointsReportFileStr.replace(".tsv",".txt");
 
-    QFile file(write_file);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Error when open the file:" << file.errorString();
+    QFile jointsReportFile(jointsReportFileStr);
+    if (!jointsReportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Error when open the file:" << jointsReportFile.errorString();
     }
-    file.close();
+    jointsReportFile.close();
 
-    if (!file.open(QIODevice::Append | QIODevice::Text)) {
-        qDebug() << "Error when open the file:" << file.errorString();
+    if (!jointsReportFile.open(QIODevice::Append | QIODevice::Text)) {
+        qDebug() << "Error when open the file:" << jointsReportFile.errorString();
     }
+
+#if RULA_ASSESSMENT == 1
+    QString rulaReportFileStr = file_name;
+    rulaReportFileStr.replace("tsv_files", "rula_reports");
+    rulaReportFileStr.replace(".tsv",".txt");
+
+    QFile rulaReportFile(rulaReportFileStr);
+    if (!rulaReportFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Error when open the file:" << rulaReportFile.errorString();
+    }
+    rulaReportFile.close();
+
+    if (!rulaReportFile.open(QIODevice::Append | QIODevice::Text)) {
+        qDebug() << "Error when open the file:" << rulaReportFile.errorString();
+    }
+#endif
 
     Vector3d euler_angles;
     for(int frame = 0; frame < this->q_obj.get_n_frames(); frame++){
@@ -138,19 +173,37 @@ void MainWindow::on_pushButton_loadfile_clicked(){
         }
       }
 
+#if RULA_ASSESSMENT == 1
       if(numberOfAvailableJoints == joints_buffer.size()){
         /*INSERT RULA-BASED POSTURAL ASSESSMENT ALGORITHM HERE*/
+        vector<Joint> rJoints = {*joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
+        vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
+        RULA_SegmentsVariables rRulaVariables, lRulaVariables;
+        setRULA_Variables(rJoints, rRulaVariables);
+        setRULA_Variables(lJoints,lRulaVariables);
+        Rula rRULA, lRULA;
+        rRULA.setRULA_Variables(rRulaVariables);
+        rRULA.executeRulaEvalutation();
+        lRULA.setRULA_Variables(lRulaVariables);
+        lRULA.executeRulaEvalutation();
+        appendRULA_Data(rulaReportFile,rRULA,lRULA,frame);
       }
+#endif
 
       //Save data in the .txt report
-      appendJointsData(file,this->joints_buffer,frame);
+      appendJointsData(jointsReportFile,this->joints_buffer,frame);
 
       //Update plots data
       this->plot_interface.update_plots(frame,this->joints_buffer);
 
       cout << frame << endl;
     }
-    file.close();
+    jointsReportFile.close();
+
+#if RULA_ASSESSMENT == 1
+    rulaReportFile.close();
+#endif
+
   }
   ui->loadFile_label->setText(file_name);
 }
