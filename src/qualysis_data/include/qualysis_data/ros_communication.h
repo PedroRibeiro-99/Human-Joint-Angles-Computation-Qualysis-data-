@@ -51,12 +51,14 @@ private:
   vector<ros::Publisher> markersPositionsPubBuffer;
   vector<ros::Publisher> segmentsPositionsPubBuffer;
   vector<ros::Publisher> segmentsOrientationsPubBuffer;
+  vector<ros::Publisher> segmentsRulaStatusPubBuffer;
 
 public:
   ros_communication(int argc, char *argv[],ros::NodeHandle n, vector<QStringList> topicsStr);
   void rosPublishMarkersPositions(vector<vector<float>> positions);
   void rosPublishSegmentsPositions(vector<vector<float>> positions);
   void rosPublishSegmentsOrientations(vector<vector<float>> orientations);
+  void rosPublishSegmentsRulaStatus(vector<int> rulaStatus);
   void rosPublish(vector<vector<float>> markersPositions, vector<vector<float>> segmentsPositions, vector<vector<float>> segmentsOrientations);
 };
 

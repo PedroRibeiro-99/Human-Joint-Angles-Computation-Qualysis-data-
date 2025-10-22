@@ -25,7 +25,7 @@ public:
 private Q_SLOTS:
   void on_pushButton_loadfile_clicked();
   void on_pushButton_plots_clicked();
-  int initSimulationEnvironment();
+  bool initSimulationEnvironment();
   void on_pushButton_execMovement_clicked();
   void on_pushButton_execFrame_clicked();
 

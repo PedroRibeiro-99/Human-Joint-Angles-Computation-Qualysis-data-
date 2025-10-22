@@ -23,12 +23,12 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
 {
   ui->setupUi(this);
 
-  sR_arm.setName("Right_arm");
-  sR_forearm.setName("Right_forearm");
-  sR_wrist.setName("Right_wrist");
-  sL_arm.setName("Left_arm");
-  sL_forearm.setName("Left_forearm");
-  sL_wrist.setName("Left_wrist");
+  sR_arm.setName("RightArm");
+  sR_forearm.setName("RightForearm");
+  sR_wrist.setName("RightWrist");
+  sL_arm.setName("LeftArm");
+  sL_forearm.setName("LeftForearm");
+  sL_wrist.setName("LeftWrist");
   s_neck.setName("Neck");
   s_trunk.setName("Trunk");
   this->segments_buffer = {&sR_arm, &sR_forearm, &sR_wrist, &sL_arm, &sL_forearm, &sL_wrist, &s_neck, &s_trunk};
@@ -46,7 +46,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
 
 #if SIMULATION == 1
   ros::init(argc, argv, "QualysisROSComunication");
-  if(this->initSimulationEnvironment() == -1) exit(-1);
+  if(!this->initSimulationEnvironment()) exit(-1);
 #endif
 }
 
@@ -83,21 +83,30 @@ int appendJointsData(QFile &file, vector<Joint*> joints, int frame){
 }
 
 #if RULA_ASSESSMENT == 1
-int appendRULA_Data(QFile &file, Rula &rRULA, Rula &lRULA, int frame){
-  QTextStream in(&file);
 
+void updateRulaDataBuffer(QString side, Rula &rulaObj, QStringList &textStreamBuffer){
+
+  textStreamBuffer.push_back(side.toUpper() + " ARM RULA ASSESSMENT");
+  textStreamBuffer.push_back(side + " Upper Arm: " + QString::number(rulaObj.getUpperArmScore()));
+  textStreamBuffer.push_back(side + " Lower Arm: " + QString::number(rulaObj.getLowerArmScore()));
+  textStreamBuffer.push_back(side + " Wrist: " + QString::number(rulaObj.getWristScore()));
+  textStreamBuffer.push_back("Neck: " + QString::number(rulaObj.getNeckScore()));
+  textStreamBuffer.push_back("Trunk: " + QString::number(rulaObj.getTrunkScore()));
+  textStreamBuffer.push_back("Group A: " + QString::number(rulaObj.getGroupA_Score()));
+  textStreamBuffer.push_back("Group B: " + QString::number(rulaObj.getGroupB_Score()));
+  textStreamBuffer.push_back(side.toUpper()+ " TOTAL SCORE: " + QString::number(rulaObj.getTotalScore()));
+  textStreamBuffer.push_back(" ");
+}
+
+
+void appendRULA_Data(QFile &file, QStringList &textStreamBuffer, int frame){
+  QTextStream in(&file);
   in << "FRAME: " << frame << endl << endl;
-  in << "RIGHT ARM RULA ASSESSMENT" << endl;
-  in << "Right Upper Arm: " << rRULA.getUpperArmScore() << "\t\t\t | \t\t\t" << "Left Upper Arm: " << lRULA.getUpperArmScore() << endl;
-  in << "Right Lower Arm: " << rRULA.getLowerArmScore() << "\t\t\t | \t\t\t" << "Left Lower Arm: " << lRULA.getLowerArmScore() << endl;
-  in << "Right Wrist: " << rRULA.getWristScore() << "\t\t\t\t | \t\t\t" << "Left Wrist: " << lRULA.getWristScore() << endl;
-  in << "Group A Score: " << rRULA.getGroupA_Score() << "\t\t\t | \t\t\t" << "Group A Score: " << lRULA.getGroupA_Score() << endl << endl;
-  in << "Neck Score: " << rRULA.getNeckScore() << endl;
-  in << "Trunk Score: " << rRULA.getTrunkScore() << endl;
-  in << "Group B Score: " << rRULA.getGroupB_Score() << endl << endl;
-  in << "RIGHT TOTAL SCORE: " << rRULA.getTotalScore() << "\t\t | \t\t\t" << "LEFT TOTAL SCORE: " << lRULA.getTotalScore() << endl;
+  for(QString line : textStreamBuffer)
+    in << line << endl;
   in << "-----------------------------------------------------" << endl;
 }
+
 #endif
 
 
@@ -174,20 +183,46 @@ void MainWindow::on_pushButton_loadfile_clicked(){
       }
 
 #if RULA_ASSESSMENT == 1
-      if(numberOfAvailableJoints == joints_buffer.size()){
-        /*INSERT RULA-BASED POSTURAL ASSESSMENT ALGORITHM HERE*/
-        vector<Joint> rJoints = {*joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
-        vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
-        RULA_SegmentsVariables rRulaVariables, lRulaVariables;
+      vector<Joint> rJoints = {*joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
+      vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
+
+      bool rightArmAssessmentAvailable = true;
+      for(Joint joint : rJoints){
+        if(!joint.verifyData()){
+          rightArmAssessmentAvailable = false;
+          break;
+        }
+      }
+      bool leftArmAssessmentAvailable = true;
+      for(Joint joint : lJoints){
+        if(!joint.verifyData()){
+          leftArmAssessmentAvailable = false;
+          break;
+        }
+      }
+
+      QStringList textStreamBuffer;
+      textStreamBuffer.clear();
+
+      if(rightArmAssessmentAvailable){
+        RULA_SegmentsVariables rRulaVariables;
         setRULA_Variables(rJoints, rRulaVariables);
-        setRULA_Variables(lJoints,lRulaVariables);
-        Rula rRULA, lRULA;
+        Rula rRULA;
         rRULA.setRULA_Variables(rRulaVariables);
         rRULA.executeRulaEvalutation();
+        updateRulaDataBuffer("Right",rRULA,textStreamBuffer);
+      }
+      if(leftArmAssessmentAvailable){
+        RULA_SegmentsVariables lRulaVariables;
+        setRULA_Variables(lJoints,lRulaVariables);
+        Rula lRULA;
         lRULA.setRULA_Variables(lRulaVariables);
         lRULA.executeRulaEvalutation();
-        appendRULA_Data(rulaReportFile,rRULA,lRULA,frame);
+        updateRulaDataBuffer("Left",lRULA,textStreamBuffer);
       }
+
+      appendRULA_Data(rulaReportFile,textStreamBuffer,frame);
+
 #endif
 
       //Save data in the .txt report
@@ -215,7 +250,7 @@ void MainWindow::on_pushButton_plots_clicked(){
 }
 
 
-int MainWindow::initSimulationEnvironment(){
+bool MainWindow::initSimulationEnvironment(){
 
   if(!ros::master::check())
       ros::start();
@@ -233,7 +268,7 @@ int MainWindow::initSimulationEnvironment(){
   ros::NodeHandle n;
 
   if(!online)
-    return -1;
+    return false;
   else{
     // pause simulations
     rosClient = n.serviceClient<vrep_common::simRosStopSimulation>("/vrep/simRosStopSimulation");
@@ -254,6 +289,8 @@ int MainWindow::initSimulationEnvironment(){
   rosClient = n.serviceClient<vrep_common::simRosStartSimulation>("/vrep/simRosStartSimulation");
   vrep_common::simRosStartSimulation srvstart;
   rosClient.call(srvstart);
+
+  return true;
 }
 
 
@@ -302,12 +339,72 @@ void MainWindow::on_pushButton_execMovement_clicked(){
                                       static_cast<float>(referenceFrame.eulerAngles.z())});
     }
 
+#if RULA_ASSESSMENT == 1
+    size_t numberOfAvailableJoints = 0;
+    for(Joint *joint : this->joints_buffer){
+      if(joint->verifyData()){
+        joint->computeEulerAngles();
+        numberOfAvailableJoints++;
+      }
+      else {
+        joint->resetData();
+      }
+    }
+
+    vector<Joint> rJoints = {*this->joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
+    vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
+
+    bool rightArmAssessmentAvailable = true;
+    for(Joint joint : rJoints){
+      if(!joint.verifyData()){
+        rightArmAssessmentAvailable = false;
+        break;
+      }
+    }
+    bool leftArmAssessmentAvailable = true;
+    for(Joint joint : lJoints){
+      if(!joint.verifyData()){
+        leftArmAssessmentAvailable = false;
+        break;
+      }
+    }
+
+    vector<int> rulaStatusBuffer = {0,0,0,0,0,0,0,0};
+    if(rightArmAssessmentAvailable){
+      RULA_SegmentsVariables rRulaVariables;
+      setRULA_Variables(rJoints, rRulaVariables);
+      Rula rRULA;
+      rRULA.setRULA_Variables(rRulaVariables);
+      rRULA.executeRulaEvalutation();
+      rulaStatusBuffer.at(0) = rRULA.getUpperArmScoreStatus();
+      rulaStatusBuffer.at(1) = rRULA.getLowerArmScoreStatus();
+      rulaStatusBuffer.at(2) = rRULA.getWristScoreStatus();
+      rulaStatusBuffer.at(6) = rRULA.getNeckScoreStatus();
+      rulaStatusBuffer.at(7) = rRULA.getTrunkScoreStatus();
+    }
+    if(leftArmAssessmentAvailable){
+      RULA_SegmentsVariables lRulaVariables;
+      setRULA_Variables(lJoints,lRulaVariables);
+      Rula lRULA;
+      lRULA.setRULA_Variables(lRulaVariables);
+      lRULA.executeRulaEvalutation();
+      rulaStatusBuffer.at(3) = lRULA.getUpperArmScoreStatus();
+      rulaStatusBuffer.at(4) = lRULA.getLowerArmScoreStatus();
+      rulaStatusBuffer.at(5) = lRULA.getWristScoreStatus();
+      rulaStatusBuffer.at(6) = lRULA.getNeckScoreStatus();
+      rulaStatusBuffer.at(7) = lRULA.getTrunkScoreStatus();
+    }
+
+    ros_handler.rosPublishSegmentsRulaStatus(rulaStatusBuffer);
+#endif
+
     for(Marker marker_data : markers_data)
       markersPositions.push_back({marker_data.coordinates.x, marker_data.coordinates.y, marker_data.coordinates.z});
 
     ros_handler.rosPublishMarkersPositions(markersPositions);
     ros_handler.rosPublishSegmentsPositions(segmentsPositions);
     ros_handler.rosPublishSegmentsOrientations(segmentsOrientations);
+
   }
 
 }
@@ -364,6 +461,65 @@ void MainWindow::on_pushButton_execFrame_clicked()
                                     static_cast<float>(referenceFrame.eulerAngles.y()),
                                     static_cast<float>(referenceFrame.eulerAngles.z())});
   }
+
+#if RULA_ASSESSMENT == 1
+  size_t numberOfAvailableJoints = 0;
+  for(Joint *joint : this->joints_buffer){
+    if(joint->verifyData()){
+      joint->computeEulerAngles();
+      numberOfAvailableJoints++;
+    }
+    else {
+      joint->resetData();
+    }
+  }
+
+  vector<Joint> rJoints = {*this->joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
+  vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
+
+  bool rightArmAssessmentAvailable = true;
+  for(Joint joint : rJoints){
+    if(!joint.verifyData()){
+      rightArmAssessmentAvailable = false;
+      break;
+    }
+  }
+  bool leftArmAssessmentAvailable = true;
+  for(Joint joint : lJoints){
+    if(!joint.verifyData()){
+      leftArmAssessmentAvailable = false;
+      break;
+    }
+  }
+
+  vector<int> rulaStatusBuffer = {0,0,0,0,0,0,0,0};
+  if(rightArmAssessmentAvailable){
+    RULA_SegmentsVariables rRulaVariables;
+    setRULA_Variables(rJoints, rRulaVariables);
+    Rula rRULA;
+    rRULA.setRULA_Variables(rRulaVariables);
+    rRULA.executeRulaEvalutation();
+    rulaStatusBuffer.at(0) = rRULA.getUpperArmScoreStatus();
+    rulaStatusBuffer.at(1) = rRULA.getLowerArmScoreStatus();
+    rulaStatusBuffer.at(2) = rRULA.getWristScoreStatus();
+    rulaStatusBuffer.at(6) = rRULA.getNeckScoreStatus();
+    rulaStatusBuffer.at(7) = rRULA.getTrunkScoreStatus();
+  }
+  if(leftArmAssessmentAvailable){
+    RULA_SegmentsVariables lRulaVariables;
+    setRULA_Variables(lJoints,lRulaVariables);
+    Rula lRULA;
+    lRULA.setRULA_Variables(lRulaVariables);
+    lRULA.executeRulaEvalutation();
+    rulaStatusBuffer.at(3) = lRULA.getUpperArmScoreStatus();
+    rulaStatusBuffer.at(4) = lRULA.getLowerArmScoreStatus();
+    rulaStatusBuffer.at(5) = lRULA.getWristScoreStatus();
+    rulaStatusBuffer.at(6) = lRULA.getNeckScoreStatus();
+    rulaStatusBuffer.at(7) = lRULA.getTrunkScoreStatus();
+  }
+  sleep(1);
+  ros_handler.rosPublishSegmentsRulaStatus(rulaStatusBuffer);
+#endif
 
   for(Marker marker_data : markers_data)
     markersPositions.push_back({marker_data.coordinates.x, marker_data.coordinates.y, marker_data.coordinates.z});

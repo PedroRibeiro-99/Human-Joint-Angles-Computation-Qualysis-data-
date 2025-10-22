@@ -13,10 +13,13 @@ ros_communication::ros_communication(int argc, char *argv[], ros::NodeHandle n, 
   for(QString segmentName : segmentsNames){
     QString segmentPosTopic = "/vrep/" + segmentName + "_pos_topic";
     QString segmentOriTopic = "/vrep/" + segmentName + "_ori_topic";
+    QString segmentRulaStatusTopic = "/vrep/" + segmentName + "_status_topic";
     ros::Publisher segmentPosPub = n.advertise<std_msgs::Float32MultiArray>(segmentPosTopic.toStdString(),1);
     ros::Publisher segmentOriPub = n.advertise<std_msgs::Float32MultiArray>(segmentOriTopic.toStdString(),1);
+    ros::Publisher segmentsRulaStatusPub = n.advertise<std_msgs::UInt8>(segmentRulaStatusTopic.toStdString(),1);
     segmentsPositionsPubBuffer.push_back(segmentPosPub);
     segmentsOrientationsPubBuffer.push_back(segmentOriPub);
+    segmentsRulaStatusPubBuffer.push_back(segmentsRulaStatusPub);
   }
 }
 
@@ -64,6 +67,18 @@ void ros_communication::rosPublishSegmentsOrientations(vector<vector<float>> ori
     segmentsOrientationsPubBuffer.at(segment).publish(ori_msg);
   }
   r.sleep();
+}
+
+void ros_communication::rosPublishSegmentsRulaStatus(vector<int> rulaStatusBuffer){
+  std_msgs::UInt8 rulaStatus_msg;
+  size_t n_segments = this->segmentsRulaStatusPubBuffer.size();
+  //ros::Rate r(40);
+
+  for(size_t n_segment = 0; n_segment < n_segments; n_segment++){
+    rulaStatus_msg.data = rulaStatusBuffer.at(n_segment);
+    segmentsRulaStatusPubBuffer.at(n_segment).publish(rulaStatus_msg);
+  }
+ // r.sleep();
 }
 
 void ros_communication::rosPublish(vector<vector<float>> markersPositions, vector<vector<float>> segmentsPositions, vector<vector<float>> segmentsOrientations){

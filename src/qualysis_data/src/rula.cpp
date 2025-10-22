@@ -83,7 +83,6 @@ void Rula::setRULA_Variables(RULA_SegmentsVariables &rulaVariables){
   this->loadScore = rulaVariables.loadScore;
 }
 
-
 void Rula::computeUpperArmEvaluation(){
 
    upperArm.evaluation = 1;
