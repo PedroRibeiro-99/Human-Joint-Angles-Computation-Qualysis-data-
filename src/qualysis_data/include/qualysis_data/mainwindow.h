@@ -33,9 +33,9 @@ private:
   int argc; char** argv;
   Ui::MainWindow *ui;
   QualysisMoveData q_obj;
-  Segment sR_arm, sR_forearm, sR_wrist, sL_arm, sL_forearm, sL_wrist, s_trunk;
+  Segment sR_arm, sR_forearm, sR_wrist, sL_arm, sL_forearm, sL_wrist, s_neck, s_trunk;
   vector<Segment*> segments_buffer;
-  Joint jR_arm, jR_forearm, jR_wrist,jL_arm, jL_forearm, jL_wrist;
+  Joint jR_arm, jR_forearm, jR_wrist,jL_arm, jL_forearm, jL_wrist, j_neck, j_trunk;
   vector<Joint*> joints_buffer;
   PlotsInterface plot_interface;
 };

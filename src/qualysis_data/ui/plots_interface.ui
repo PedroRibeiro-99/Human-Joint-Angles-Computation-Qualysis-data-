@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="RightArm_tab">
     <attribute name="title">
@@ -455,15 +455,15 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="Trunk_tab">
+   <widget class="QWidget" name="Neck_Trunk_tab">
     <attribute name="title">
-     <string>Trunk</string>
+     <string>Neck and Trunk</string>
     </attribute>
     <widget class="QCustomPlot" name="Trunk_x" native="true">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>90</y>
+       <y>360</y>
        <width>381</width>
        <height>241</height>
       </rect>
@@ -473,7 +473,7 @@
      <property name="geometry">
       <rect>
        <x>860</x>
-       <y>90</y>
+       <y>360</y>
        <width>381</width>
        <height>241</height>
       </rect>
@@ -483,7 +483,7 @@
      <property name="geometry">
       <rect>
        <x>440</x>
-       <y>90</y>
+       <y>360</y>
        <width>381</width>
        <height>241</height>
       </rect>
@@ -493,7 +493,7 @@
      <property name="geometry">
       <rect>
        <x>860</x>
-       <y>70</y>
+       <y>340</y>
        <width>191</width>
        <height>17</height>
       </rect>
@@ -506,7 +506,7 @@
      <property name="geometry">
       <rect>
        <x>440</x>
-       <y>70</y>
+       <y>340</y>
        <width>191</width>
        <height>17</height>
       </rect>
@@ -519,13 +519,82 @@
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>70</y>
+       <y>340</y>
        <width>191</width>
        <height>17</height>
       </rect>
      </property>
      <property name="text">
       <string>Trunk X</string>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="Neck_x" native="true">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>50</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="neck_x_label">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>30</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Neck X</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="neck_y_label">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>30</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Neck Y</string>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="Neck_z" native="true">
+     <property name="geometry">
+      <rect>
+       <x>860</x>
+       <y>50</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="neck_z_label">
+     <property name="geometry">
+      <rect>
+       <x>860</x>
+       <y>30</y>
+       <width>191</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Neck Z</string>
+     </property>
+    </widget>
+    <widget class="QCustomPlot" name="Neck_y" native="true">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>50</y>
+       <width>381</width>
+       <height>241</height>
+      </rect>
      </property>
     </widget>
    </widget>

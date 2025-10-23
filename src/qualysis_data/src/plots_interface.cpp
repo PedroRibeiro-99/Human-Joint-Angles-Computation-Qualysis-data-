@@ -29,6 +29,13 @@ PlotsInterface::PlotsInterface(QWidget *parent) :
   this->plots.push_back(this->ui->L_Wrist_y);
   this->plots.push_back(this->ui->L_Wrist_z);
 
+  this->plots.push_back(this->ui->Neck_x);
+  this->plots.push_back(this->ui->Neck_y);
+  this->plots.push_back(this->ui->Neck_z);
+  this->plots.push_back(this->ui->Trunk_x);
+  this->plots.push_back(this->ui->Trunk_y);
+  this->plots.push_back(this->ui->Trunk_z);
+
   //Plot Features
   for(QCustomPlot *plot : plots){
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);

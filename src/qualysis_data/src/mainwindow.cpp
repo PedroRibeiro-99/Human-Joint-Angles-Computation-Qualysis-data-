@@ -24,20 +24,23 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
   sR_arm.setName("Right_arm");
   sR_forearm.setName("Right_forearm");
   sR_wrist.setName("Right_wrist");
-  s_trunk.setName("Trunk");
   sL_arm.setName("Left_arm");
   sL_forearm.setName("Left_forearm");
   sL_wrist.setName("Left_wrist");
-  this->segments_buffer = {&sR_arm, &sR_forearm, &sR_wrist, &sL_arm, &sL_forearm, &sL_wrist, &s_trunk};
+  s_neck.setName("Neck");
+  s_trunk.setName("Trunk");
+  this->segments_buffer = {&sR_arm, &sR_forearm, &sR_wrist, &sL_arm, &sL_forearm, &sL_wrist, &s_neck, &s_trunk};
 
 
-  this->jR_arm.initJoint("RIGHT ARM",&s_trunk, &sR_arm);
-  this->jR_forearm.initJoint("RIGHT FOREARM",&sR_arm, &sR_forearm);
-  this->jR_wrist.initJoint("RIGHT WRIST",&sR_forearm, &sR_wrist);
-  this->jL_arm.initJoint("LEFT ARM",&s_trunk, &sL_arm);
-  this->jL_forearm.initJoint("LEFT FOREARM",&sL_arm, &sL_forearm);
-  this->jL_wrist.initJoint("LEFT WRIST",&sL_forearm, &sL_wrist);
-  this->joints_buffer = {&jR_arm, &jR_forearm, &jR_wrist, &jL_arm, &jL_forearm, &jL_wrist};
+  this->jR_arm.initJoint("RIGHT ARM",{&s_trunk, &sR_arm});
+  this->jR_forearm.initJoint("RIGHT FOREARM",{&sR_arm, &sR_forearm});
+  this->jR_wrist.initJoint("RIGHT WRIST",{&sR_forearm, &sR_wrist});
+  this->jL_arm.initJoint("LEFT ARM",{&s_trunk, &sL_arm});
+  this->jL_forearm.initJoint("LEFT FOREARM",{&sL_arm, &sL_forearm});
+  this->jL_wrist.initJoint("LEFT WRIST",{&sL_forearm, &sL_wrist});
+  this->j_neck.initJoint("NECK", {&s_trunk, &s_neck});
+  this->j_trunk.initJoint("TRUNK",{&s_trunk});
+  this->joints_buffer = {&jR_arm, &jR_forearm, &jR_wrist, &jL_arm, &jL_forearm, &jL_wrist, &j_neck, &j_trunk};
 
 #if SIMULATION == 0
   ros::init(argc, argv, "QualysisROSComunication");
@@ -94,6 +97,7 @@ void MainWindow::on_pushButton_loadfile_clicked(){
     this->sL_arm.initSegment(this->q_obj.getMarkersIDs(vector<string>{"LLE_elb","LME_elb","LAC_sho"}),-1,1,{0,0,-45});
     this->sL_forearm.initSegment(this->q_obj.getMarkersIDs(vector<string>{"LUS_wrist","LRS_wrist","LLE_elb"}),1,1,{0,0,15});
     this->sL_wrist.initSegment(this->q_obj.getMarkersIDs(vector<string>{"LHM2_hand","LHL5_hand","LUS_wrist","LRS_wrist"}),-1,1,{0,0,10});
+    this->s_neck.initSegment(this->q_obj.getMarkersIDs(vector<string>{"LBH","RBH","C7"}),1,-1,{0,0,-90});
     this->s_trunk.initSegment(this->q_obj.getMarkersIDs(vector<string>{"RPSI_back","LPSI_back","C7"}),1,1,{0,0,-90});
 
     QString write_file = file_name;
@@ -122,12 +126,21 @@ void MainWindow::on_pushButton_loadfile_clicked(){
           segment->resetData();
         }
       }
-      for(Joint *joint : this->joints_buffer)
-        if(joint->verifyData())
+
+      size_t numberOfAvailableJoints = 0;
+      for(Joint *joint : this->joints_buffer){
+        if(joint->verifyData()){
           joint->computeEulerAngles();
+          numberOfAvailableJoints++;
+        }
         else {
           joint->resetData();
         }
+      }
+
+      if(numberOfAvailableJoints == joints_buffer.size()){
+        /*INSERT RULA-BASED POSTURAL ASSESSMENT ALGORITHM HERE*/
+      }
 
       //Save data in the .txt report
       appendJointsData(file,this->joints_buffer,frame);
