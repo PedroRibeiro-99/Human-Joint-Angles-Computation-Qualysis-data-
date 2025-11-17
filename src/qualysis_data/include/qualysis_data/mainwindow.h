@@ -6,6 +6,7 @@
 #include "joint.h"
 #include "plots_interface.h"
 #include "ros_communication.h"
+#include "rula.h"
 #include <iostream>
 
 using namespace std;
@@ -20,6 +21,10 @@ class MainWindow : public QMainWindow
 
 public:
   explicit MainWindow(int argc, char** argv, QWidget *parent = nullptr);
+  void computeSegmentsRefFrames(Segment &segment, int frame);
+  void computeJointsAngles();
+  void computeRulaEvaluation(Rula &rRULA, Rula &lRULA, vector<int> &rulaStatusBuffer);
+  void execFrameData(int frame, ros_communication &ros_handler);
   ~MainWindow();
 
 private Q_SLOTS:
@@ -37,6 +42,8 @@ private:
   vector<Segment*> segments_buffer;
   Joint jR_arm, jR_forearm, jR_wrist,jL_arm, jL_forearm, jL_wrist, j_neck, j_trunk;
   vector<Joint*> joints_buffer;
+  bool rightArmAssessmentAvailable;
+  bool leftArmAssessmentAvailable;
   PlotsInterface plot_interface;
 };
 

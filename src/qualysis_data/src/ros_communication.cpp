@@ -29,14 +29,14 @@ void ros_communication::rosPublishMarkersPositions(vector<vector<float>> positio
   vector<float> pos;
   int n_markers = static_cast<int> (this->markersPositionsPubBuffer.size());
 
-  ros::Rate r(40);
+  //ros::Rate r(40);
 
   for(int marker = 0; marker < n_markers; marker++){
     pos = positions.at(marker);
     pos_msg.data = {pos.at(0),pos.at(1),pos.at(2)}; //pass the x,y,z coordinates to pos_msg
     markersPositionsPubBuffer.at(marker).publish(pos_msg);
   }
-  r.sleep();
+  //r.sleep();
 }
 
 void ros_communication::rosPublishSegmentsPositions(vector<vector<float>> positions){
@@ -44,14 +44,14 @@ void ros_communication::rosPublishSegmentsPositions(vector<vector<float>> positi
   vector<float> pos;
   int n_segments = static_cast<int> (this->segmentsPositionsPubBuffer.size());
 
-  ros::Rate r(40);
+  //ros::Rate r(40);
 
   for(int segment = 0; segment < n_segments; segment++){
     pos = positions.at(segment);
     pos_msg.data = {pos.at(0),pos.at(1),pos.at(2)}; //pass the x,y,z coordinates to pos_msg
     segmentsPositionsPubBuffer.at(segment).publish(pos_msg);
   }
-  r.sleep();
+  //r.sleep();
 }
 
 void ros_communication::rosPublishSegmentsOrientations(vector<vector<float>> orientations){
@@ -59,14 +59,14 @@ void ros_communication::rosPublishSegmentsOrientations(vector<vector<float>> ori
   vector<float> ori;
   int n_segments = static_cast<int> (this->segmentsOrientationsPubBuffer.size());
 
-  ros::Rate r(40);
+  //ros::Rate r(40);
 
   for(int segment = 0; segment < n_segments; segment++){
     ori = orientations.at(segment);
     ori_msg.data = {ori.at(0),ori.at(1),ori.at(2)}; //pass the x,y,z coordinates to ori_msg
     segmentsOrientationsPubBuffer.at(segment).publish(ori_msg);
   }
-  r.sleep();
+  //r.sleep();
 }
 
 void ros_communication::rosPublishSegmentsRulaStatus(vector<int> rulaStatusBuffer){

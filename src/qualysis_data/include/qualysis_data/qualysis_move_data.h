@@ -24,18 +24,20 @@ typedef struct{
 
 class QualysisMoveData{
 private:
-  int n_frames;
-  int n_markers;
+  int frequency;
+  int numberOfFrames;
+  int numberOfMarkers;
   QStringList markersNames;
   vector<vector<Marker>> markersData;
 public:
   QualysisMoveData();
   void resetData();
-  int get_n_frames();
-  int get_n_markers();
+  int getFrequency();
+  int getNumberOfFrames();
+  int getNumberOfMarkers();
   QStringList getMarkersNames();
-  int load_data_file(QString fileName);
-  void get_frame_data(vector<Marker> &markers_frame_date, int frame);
+  int loadDataFile(QString fileName);
+  void getFrameData(vector<Marker> &markers_frame_date, int frame);
   void getMarkerData(Marker &marker, int markerID, int frame);
   int getMarkerID(string markerName);
   vector<int> getMarkersIDs(vector<string> markersNames);

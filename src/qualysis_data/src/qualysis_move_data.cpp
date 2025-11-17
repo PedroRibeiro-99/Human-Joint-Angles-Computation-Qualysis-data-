@@ -6,18 +6,23 @@ QualysisMoveData::QualysisMoveData()
 }
 
 void QualysisMoveData::resetData(){
-  this->n_frames = 0;
-  this->n_markers = 0;
+  this->numberOfFrames = 0;
+  this->numberOfMarkers = 0;
   this->markersNames.clear();
   this->markersData.clear();
 }
 
-int QualysisMoveData::get_n_frames(){
-  return this->n_frames;
+int QualysisMoveData::getFrequency(){
+  return this->frequency;
 }
 
-int QualysisMoveData::get_n_markers(){
-  return this->n_markers;
+
+int QualysisMoveData::getNumberOfFrames(){
+  return this->numberOfFrames;
+}
+
+int QualysisMoveData::getNumberOfMarkers(){
+  return this->numberOfMarkers;
 }
 
 QStringList QualysisMoveData::getMarkersNames(){
@@ -25,7 +30,7 @@ QStringList QualysisMoveData::getMarkersNames(){
 }
 
 
-int QualysisMoveData::load_data_file(QString fileName){
+int QualysisMoveData::loadDataFile(QString fileName){
   QFile file(fileName);
 
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -41,10 +46,11 @@ int QualysisMoveData::load_data_file(QString fileName){
   for(int row = 0; row < 12 ; row++){
     line = in.readLine();
     fields = line.split('\t'); // tab delimiter
-    if (row == 0) this->n_frames = fields[1].toInt(); //extract number of frames
-    else if(row == 2)  this->n_markers = fields[1].toInt(); //extract number of markers
+    if (row == 0) this->numberOfFrames = fields[1].toInt(); //extract number of frames
+    else if(row == 2)  this->numberOfMarkers = fields[1].toInt(); //extract number of markers
+    else if(row == 3) this->frequency = fields[1].toInt();
     else if(row == 9) //extract markers names
-      for(int column = 1; column < n_markers+1; column++)
+      for(int column = 1; column < numberOfMarkers+1; column++)
         this->markersNames.push_back(fields[column]);
     else if(row == 11){ //finds the column that begins the positions data
       for(int column = 0 ; column < fields.size() ; column++)
@@ -55,11 +61,11 @@ int QualysisMoveData::load_data_file(QString fileName){
     }
   }
 
-  for(int frame = 0; frame < this->n_frames ; frame++){
+  for(int frame = 0; frame < this->numberOfFrames ; frame++){
     line = in.readLine();
     fields = line.split('\t'); // tab delimiter
     vector<Marker> markers_frame_data;
-    for(int column = 0; column < this->n_markers*3; column+=3){
+    for(int column = 0; column < this->numberOfMarkers*3; column+=3){
       Marker marker;
       marker.name = markersNames[column/3].toStdString();
       marker.coordinates.x = fields[column + positionsDataCollumnsOffset].toFloat() * 0.001;
@@ -75,7 +81,7 @@ int QualysisMoveData::load_data_file(QString fileName){
 }
 
 
-void QualysisMoveData::get_frame_data(vector<Marker> &markers_frame_date, int frame){
+void QualysisMoveData::getFrameData(vector<Marker> &markers_frame_date, int frame){
 
   markers_frame_date = this->markersData.at(frame);
 }
@@ -86,7 +92,7 @@ void QualysisMoveData::getMarkerData(Marker &marker, int marker_id, int frame){
 }
 
 int QualysisMoveData::getMarkerID(string markerName){
-  for (int i = 0; i < this->n_markers; i++){
+  for (int i = 0; i < this->numberOfMarkers; i++){
     if(markerName == markersNames[i].toStdString())
       return i;
   }

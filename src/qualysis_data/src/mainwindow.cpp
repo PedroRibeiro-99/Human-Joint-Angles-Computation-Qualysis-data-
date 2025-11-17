@@ -1,11 +1,12 @@
 #include "../include/qualysis_data/mainwindow.h"
 #include "../include/qualysis_data/config.hpp"
-#include "../include/qualysis_data/rula.h"
 
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QFile>
 #include <QThread>
+#include <thread>
+#include <chrono>
 
 #if SIMULATION == 1
 #include <vrep_common/simRosLoadScene.h>
@@ -47,6 +48,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent) :
 #if SIMULATION == 1
   ros::init(argc, argv, "QualysisROSComunication");
   if(!this->initSimulationEnvironment()) exit(-1);
+  //r.reset();
 #endif
 }
 
@@ -117,7 +119,7 @@ void MainWindow::on_pushButton_loadfile_clicked(){
   QString file_name = QFileDialog::getOpenFileName(this,"",FILES_PATH);
   char *file_path = file_name.toLocal8Bit().data();
 
-  if(this->q_obj.load_data_file(file_path) == 1){
+  if(this->q_obj.loadDataFile(file_path) == 1){
     //SEGMENTS
     this->sR_arm.initSegment(this->q_obj.getMarkersIDs(vector<string>{"RLE_elb","RME_elb","RAC_sho"}),1,1,{0,0,-127});
     this->sR_forearm.initSegment(this->q_obj.getMarkersIDs(vector<string>{"RUS_wrist","RRS_wrist","RLE_elb"}),-1,1,{0,0,-191});
@@ -159,80 +161,32 @@ void MainWindow::on_pushButton_loadfile_clicked(){
 #endif
 
     Vector3d euler_angles;
-    for(int frame = 0; frame < this->q_obj.get_n_frames(); frame++){
-      for(Segment *segment : this->segments_buffer){
-        if(segment->verifyData(this->q_obj,frame)){
-          segment->computeBaseRefFrame(this->q_obj,frame);
-          segment->computeCalibratedRefFrame();
-        }
-        else {
-          cout << "failed at frame " << frame << " for " << segment->getName() << endl;
-          segment->resetData();
-        }
-      }
+    for(int frame = 0; frame < this->q_obj.getNumberOfFrames(); frame++){
+      for(Segment *segment : this->segments_buffer)
+        this->computeSegmentsRefFrames(*segment,frame);
 
-      size_t numberOfAvailableJoints = 0;
-      for(Joint *joint : this->joints_buffer){
-        if(joint->verifyData()){
-          joint->computeEulerAngles();
-          numberOfAvailableJoints++;
-        }
-        else {
-          joint->resetData();
-        }
-      }
+      this->computeJointsAngles();
+      //Save data in the .txt report
+      appendJointsData(jointsReportFile,this->joints_buffer,frame);
 
 #if RULA_ASSESSMENT == 1
-      vector<Joint> rJoints = {*joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
-      vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
-
-      bool rightArmAssessmentAvailable = true;
-      for(Joint joint : rJoints){
-        if(!joint.verifyData()){
-          rightArmAssessmentAvailable = false;
-          break;
-        }
-      }
-      bool leftArmAssessmentAvailable = true;
-      for(Joint joint : lJoints){
-        if(!joint.verifyData()){
-          leftArmAssessmentAvailable = false;
-          break;
-        }
-      }
+      Rula rRULA,lRULA;
+      vector<int> rulaStatusBuffer = {0,0,0,0,0,0,0,0};
+      this->computeRulaEvaluation(rRULA, lRULA, rulaStatusBuffer);
 
       QStringList textStreamBuffer;
       textStreamBuffer.clear();
-
-      if(rightArmAssessmentAvailable){
-        RULA_SegmentsVariables rRulaVariables;
-        setRULA_Variables(rJoints, rRulaVariables);
-        Rula rRULA;
-        rRULA.setRULA_Variables(rRulaVariables);
-        rRULA.executeRulaEvalutation();
-        updateRulaDataBuffer("Right",rRULA,textStreamBuffer);
-      }
-      if(leftArmAssessmentAvailable){
-        RULA_SegmentsVariables lRulaVariables;
-        setRULA_Variables(lJoints,lRulaVariables);
-        Rula lRULA;
-        lRULA.setRULA_Variables(lRulaVariables);
-        lRULA.executeRulaEvalutation();
-        updateRulaDataBuffer("Left",lRULA,textStreamBuffer);
-      }
-
+      if(rightArmAssessmentAvailable) updateRulaDataBuffer("Right",rRULA,textStreamBuffer);
+      if(leftArmAssessmentAvailable) updateRulaDataBuffer("Left",lRULA,textStreamBuffer);
       appendRULA_Data(rulaReportFile,textStreamBuffer,frame);
-
 #endif
-
-      //Save data in the .txt report
-      appendJointsData(jointsReportFile,this->joints_buffer,frame);
 
       //Update plots data
       this->plot_interface.update_plots(frame,this->joints_buffer);
 
       cout << frame << endl;
     }
+
     jointsReportFile.close();
 
 #if RULA_ASSESSMENT == 1
@@ -296,6 +250,28 @@ bool MainWindow::initSimulationEnvironment(){
 
 void MainWindow::on_pushButton_execMovement_clicked(){
 
+  // Criar a thread nativa
+  std::thread([this]() {
+
+    //Get segments names
+    QStringList segmentsNames;
+    for(Segment *segment : this->segments_buffer){
+      segmentsNames.push_back(QString::fromStdString(segment->getName()));
+    }
+    vector<QStringList> topicsStr = {this->q_obj.getMarkersNames(),segmentsNames};
+
+    ros::NodeHandle n;
+    ros_communication ros_handler(argc,argv,n,topicsStr);
+    usleep(500000);
+
+    for(int frame = 0; frame < q_obj.getNumberOfFrames(); frame++)
+        this->execFrameData(frame, ros_handler);
+
+  }).detach(); // detach para rodar em background e não bloquear
+}
+
+void MainWindow::on_pushButton_execFrame_clicked()
+{
   //Get segments names
   QStringList segmentsNames;
   for(Segment *segment : this->segments_buffer){
@@ -306,96 +282,45 @@ void MainWindow::on_pushButton_execMovement_clicked(){
   ros::NodeHandle n;
   ros_communication ros_handler(argc,argv,n,topicsStr);
 
+
+  int frame = ui->lineEdit_frame->text().toInt();
+
+  usleep(500000);
+  this->execFrameData(frame,ros_handler);
+}
+
+void MainWindow::execFrameData(int frame, ros_communication &ros_handler){
+
+  //ros::Rate r(this->q_obj.getFrequency());
+  ros::Rate r(50);
+
   vector<Marker> markers_data;
   vector<vector<float>> markersPositions;
   vector<vector<float>> segmentsPositions;
   vector<vector<float>> segmentsOrientations;
-
   CoordinateRefFrame referenceFrame;
 
-  for(int frame = 0; frame < q_obj.get_n_frames(); frame++){
-    markersPositions.clear();
-    segmentsPositions.clear();
-    segmentsOrientations.clear();
+  q_obj.getFrameData(markers_data,frame);
 
-    q_obj.get_frame_data(markers_data,frame);
+  for(Segment *segment : this->segments_buffer){
+    this->computeSegmentsRefFrames(*segment,frame);
+    segment->getCalibratedRefFrame(referenceFrame);
+    segmentsPositions.push_back({static_cast<float>(referenceFrame.position.x()),
+                                 static_cast<float>(referenceFrame.position.y()),
+                                 static_cast<float>(referenceFrame.position.z())});
+    segmentsOrientations.push_back({static_cast<float>(referenceFrame.eulerAngles.x()),
+                                    static_cast<float>(referenceFrame.eulerAngles.y()),
+                                    static_cast<float>(referenceFrame.eulerAngles.z())});
+  }
 
-    for(Segment *segment : this->segments_buffer){
-      if(segment->verifyData(this->q_obj,frame)){
-        segment->computeBaseRefFrame(this->q_obj,frame);
-        segment->computeCalibratedRefFrame();
-      }
-      else{
-        segment->resetData();
-      }
 
-      segment->getCalibratedRefFrame(referenceFrame);
-
-      segmentsPositions.push_back({static_cast<float>(referenceFrame.position.x()),
-                                   static_cast<float>(referenceFrame.position.y()),
-                                   static_cast<float>(referenceFrame.position.z())});
-      segmentsOrientations.push_back({static_cast<float>(referenceFrame.eulerAngles.x()),
-                                      static_cast<float>(referenceFrame.eulerAngles.y()),
-                                      static_cast<float>(referenceFrame.eulerAngles.z())});
-    }
+  this->computeJointsAngles();
 
 #if RULA_ASSESSMENT == 1
-    size_t numberOfAvailableJoints = 0;
-    for(Joint *joint : this->joints_buffer){
-      if(joint->verifyData()){
-        joint->computeEulerAngles();
-        numberOfAvailableJoints++;
-      }
-      else {
-        joint->resetData();
-      }
-    }
-
-    vector<Joint> rJoints = {*this->joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
-    vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
-
-    bool rightArmAssessmentAvailable = true;
-    for(Joint joint : rJoints){
-      if(!joint.verifyData()){
-        rightArmAssessmentAvailable = false;
-        break;
-      }
-    }
-    bool leftArmAssessmentAvailable = true;
-    for(Joint joint : lJoints){
-      if(!joint.verifyData()){
-        leftArmAssessmentAvailable = false;
-        break;
-      }
-    }
-
-    vector<int> rulaStatusBuffer = {0,0,0,0,0,0,0,0};
-    if(rightArmAssessmentAvailable){
-      RULA_SegmentsVariables rRulaVariables;
-      setRULA_Variables(rJoints, rRulaVariables);
-      Rula rRULA;
-      rRULA.setRULA_Variables(rRulaVariables);
-      rRULA.executeRulaEvalutation();
-      rulaStatusBuffer.at(0) = rRULA.getUpperArmScoreStatus();
-      rulaStatusBuffer.at(1) = rRULA.getLowerArmScoreStatus();
-      rulaStatusBuffer.at(2) = rRULA.getWristScoreStatus();
-      rulaStatusBuffer.at(6) = rRULA.getNeckScoreStatus();
-      rulaStatusBuffer.at(7) = rRULA.getTrunkScoreStatus();
-    }
-    if(leftArmAssessmentAvailable){
-      RULA_SegmentsVariables lRulaVariables;
-      setRULA_Variables(lJoints,lRulaVariables);
-      Rula lRULA;
-      lRULA.setRULA_Variables(lRulaVariables);
-      lRULA.executeRulaEvalutation();
-      rulaStatusBuffer.at(3) = lRULA.getUpperArmScoreStatus();
-      rulaStatusBuffer.at(4) = lRULA.getLowerArmScoreStatus();
-      rulaStatusBuffer.at(5) = lRULA.getWristScoreStatus();
-      rulaStatusBuffer.at(6) = lRULA.getNeckScoreStatus();
-      rulaStatusBuffer.at(7) = lRULA.getTrunkScoreStatus();
-    }
-
-    ros_handler.rosPublishSegmentsRulaStatus(rulaStatusBuffer);
+  Rula rRULA,lRULA;
+  vector<int> rulaStatusBuffer = {0,0,0,0,0,0,0,0};
+  this->computeRulaEvaluation(rRULA, lRULA, rulaStatusBuffer);
+  ros_handler.rosPublishSegmentsRulaStatus(rulaStatusBuffer);
 #endif
 
     for(Marker marker_data : markers_data)
@@ -405,64 +330,22 @@ void MainWindow::on_pushButton_execMovement_clicked(){
     ros_handler.rosPublishSegmentsPositions(segmentsPositions);
     ros_handler.rosPublishSegmentsOrientations(segmentsOrientations);
 
-  }
-
+    r.sleep();
 }
 
-void MainWindow::on_pushButton_execFrame_clicked()
-{
 
-  //Get segments names
-  QStringList segmentsNames;
-  for(Segment *segment : this->segments_buffer){
-    segmentsNames.push_back(QString::fromStdString(segment->getName()));
-  }
-  vector<QStringList> topicsStr = {this->q_obj.getMarkersNames(),segmentsNames};
-
-  ros::NodeHandle n;
-  ros_communication ros_handler(argc,argv,n,topicsStr);
-
-  vector<Marker> markers_data;
-  vector<vector<float>> markersPositions;
-  vector<vector<float>> segmentsPositions;
-  vector<vector<float>> segmentsOrientations;
-
-  CoordinateRefFrame referenceFrame;
-
-  int frame = ui->lineEdit_frame->text().toInt();
-  q_obj.get_frame_data(markers_data,frame);
-
-  //GET SEGMENTS DATA
-  for(Segment *segment : this->segments_buffer){
-    if(segment->verifyData(this->q_obj,frame)){
-      segment->computeBaseRefFrame(this->q_obj,frame);
-      segment->computeCalibratedRefFrame();
+void MainWindow::computeSegmentsRefFrames(Segment &segment, int frame){
+    if(segment.verifyData(this->q_obj,frame)){
+      segment.computeBaseRefFrame(this->q_obj,frame);
+      segment.computeCalibratedRefFrame();
     }
-    else{
-      segment->resetData();
+    else {
+      cout << "failed at frame " << frame << " for " << segment.getName() << endl;
+      segment.resetData();
     }
+}
 
-    segment->getCalibratedRefFrame(referenceFrame);
-
-    cout << "----------------------------------------------------------------------" << endl;
-    cout << "Segment: " << segment->getName() << endl;
-    cout << "Director vector: (" << referenceFrame.zVector.x() << "," << referenceFrame.zVector.y() << "," << referenceFrame.zVector.z() << ")" << endl;
-    cout << "Normal vector: (" << referenceFrame.xVector.x() << "," << referenceFrame.xVector.y() << "," << referenceFrame.xVector.z() << ")" << endl;
-    cout << "Y vector: (" << referenceFrame.yVector.x() << "," << referenceFrame.yVector.y() << "," << referenceFrame.yVector.z() << ")" << endl;
-    cout << "Euler Angles (Z,Y,X)" << endl;
-    cout << "Z : " << referenceFrame.eulerAngles.z() << endl;
-    cout << "Y : " << referenceFrame.eulerAngles.y() << endl;
-    cout << "X : " << referenceFrame.eulerAngles.x() << endl;
-
-    segmentsPositions.push_back({static_cast<float>(referenceFrame.position.x()),
-                                 static_cast<float>(referenceFrame.position.y()),
-                                 static_cast<float>(referenceFrame.position.z())});
-    segmentsOrientations.push_back({static_cast<float>(referenceFrame.eulerAngles.x()),
-                                    static_cast<float>(referenceFrame.eulerAngles.y()),
-                                    static_cast<float>(referenceFrame.eulerAngles.z())});
-  }
-
-#if RULA_ASSESSMENT == 1
+void MainWindow::computeJointsAngles(){
   size_t numberOfAvailableJoints = 0;
   for(Joint *joint : this->joints_buffer){
     if(joint->verifyData()){
@@ -473,18 +356,20 @@ void MainWindow::on_pushButton_execFrame_clicked()
       joint->resetData();
     }
   }
+}
 
-  vector<Joint> rJoints = {*this->joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
+void MainWindow::computeRulaEvaluation(Rula &rRULA, Rula &lRULA, vector<int> &rulaStatusBuffer){
+  vector<Joint> rJoints = {*joints_buffer.at(0),*joints_buffer.at(1),*joints_buffer.at(2),*joints_buffer.at(6),*joints_buffer.at(7)};
   vector<Joint> lJoints = {*joints_buffer.at(3),*joints_buffer.at(4),*joints_buffer.at(5),*joints_buffer.at(6),*joints_buffer.at(7)};
 
-  bool rightArmAssessmentAvailable = true;
+  rightArmAssessmentAvailable = true;
   for(Joint joint : rJoints){
     if(!joint.verifyData()){
       rightArmAssessmentAvailable = false;
       break;
     }
   }
-  bool leftArmAssessmentAvailable = true;
+  leftArmAssessmentAvailable = true;
   for(Joint joint : lJoints){
     if(!joint.verifyData()){
       leftArmAssessmentAvailable = false;
@@ -492,11 +377,9 @@ void MainWindow::on_pushButton_execFrame_clicked()
     }
   }
 
-  vector<int> rulaStatusBuffer = {0,0,0,0,0,0,0,0};
   if(rightArmAssessmentAvailable){
     RULA_SegmentsVariables rRulaVariables;
     setRULA_Variables(rJoints, rRulaVariables);
-    Rula rRULA;
     rRULA.setRULA_Variables(rRulaVariables);
     rRULA.executeRulaEvalutation();
     rulaStatusBuffer.at(0) = rRULA.getUpperArmScoreStatus();
@@ -504,11 +387,11 @@ void MainWindow::on_pushButton_execFrame_clicked()
     rulaStatusBuffer.at(2) = rRULA.getWristScoreStatus();
     rulaStatusBuffer.at(6) = rRULA.getNeckScoreStatus();
     rulaStatusBuffer.at(7) = rRULA.getTrunkScoreStatus();
+
   }
   if(leftArmAssessmentAvailable){
     RULA_SegmentsVariables lRulaVariables;
     setRULA_Variables(lJoints,lRulaVariables);
-    Rula lRULA;
     lRULA.setRULA_Variables(lRulaVariables);
     lRULA.executeRulaEvalutation();
     rulaStatusBuffer.at(3) = lRULA.getUpperArmScoreStatus();
@@ -517,16 +400,4 @@ void MainWindow::on_pushButton_execFrame_clicked()
     rulaStatusBuffer.at(6) = lRULA.getNeckScoreStatus();
     rulaStatusBuffer.at(7) = lRULA.getTrunkScoreStatus();
   }
-  sleep(1);
-  ros_handler.rosPublishSegmentsRulaStatus(rulaStatusBuffer);
-#endif
-
-  for(Marker marker_data : markers_data)
-    markersPositions.push_back({marker_data.coordinates.x, marker_data.coordinates.y, marker_data.coordinates.z});
-
-  sleep(1);
-  ros_handler.rosPublishMarkersPositions(markersPositions);
-  ros_handler.rosPublishSegmentsPositions(segmentsPositions);
-  ros_handler.rosPublishSegmentsOrientations(segmentsOrientations);
-
 }
